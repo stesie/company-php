@@ -26,7 +26,7 @@
   "Get completion prefix"
   (and
    (eq major-mode 'php-mode)
-   (looking-back "\\(?:use\\|new\\)\s\+\\([a-zA-Z_\x7f-\xff]?[a-zA-Z0-9_\x7f-\xff]\*\\)")
+   (looking-back "\\(?:use\\|new\\)\s+\\(\\(?:\\\\?[a-zA-Z_\x7f-\xff]?[a-zA-Z0-9_\x7f-\xff]*\\)*\\)")
    (match-string 1)))
 
 (defun company-php-class--meta (candidate)
