@@ -1,4 +1,5 @@
 (require 'company)
+(require 'company-php)
 (require 'cl-lib)
 
 (setq company-php-class--candidates-list nil)
@@ -13,14 +14,7 @@
     (interactive (company-begin-backend 'company-php-class-backend))
     (prefix      (company-php-class--prefix))
     (meta        (company-php-class--meta arg))
-    (candidates
-     (copy-sequence ; hack so company won't clobber our list
-      (progn
-	(unless company-php-class--candidates-list
-	  (company-php-class--fetch-candidates))
-	(cl-remove-if-not
-	 (lambda (c) (string-prefix-p arg c))
-	 company-php-class--candidates-list))))))
+    (candidates  (company-php-class--candidates arg))))
 
 (defun company-php-class--prefix ()
   "Get completion prefix"
@@ -36,12 +30,21 @@
 	 (descriptions   (cdr (assoc "descriptions" class-info))))
     (cdr (assoc "short" descriptions))))
 
+(defun company-php-class--candidates (prefix)
+  "Get completion candidates"
+  (unless company-php-class--candidates-list
+    (company-php-class--fetch-candidates))
+
+  (copy-sequence ; hack so company won't clobber our list
+   (cl-remove-if-not
+    (lambda (c) (string-prefix-p prefix c))
+    company-php-class--candidates-list)))
+
 (defun company-php-class--fetch-candidates ()
   "Read JSON data from index file"
-  (let* ((json-array-type 'list)
-	 (json-key-type 'string)
-	 (index (json-read-file "/home/stesie/Projekte/atom-autocomplete-php/indexes/32779d1a7c218f27164747b5ddf61728/index.classes.json")))
-    (setq company-php-class--candidates-list (cdr (assoc "autocomplete" index)))
-    (setq company-php-class--candidates-mapping (cdr (assoc "mapping" index)))))
+  (let ((index (company-php-read-index "classes")))
+    (when index
+      (setq company-php-class--candidates-list (cdr (assoc "autocomplete" index)))
+      (setq company-php-class--candidates-mapping (cdr (assoc "mapping" index))))))
 
 (provide 'company-php-class)
