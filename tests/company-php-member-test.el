@@ -49,3 +49,35 @@
      ("class Baz implements \\Countable { }" . "Baz")
      ("namespace Foo\\Bar;
 class Baz { }" . "Foo\\Bar\\Baz"))))
+
+(ert-deftest company-php-member--candidates-test-this ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "namespace Foo;
+class Bar
+{
+    public function foo()
+    {
+        $this->")
+    (flet ((company-php--run-helper
+	    (command class-name)
+	    (should (string= command "methods"))
+	    (should (string= class-name "Foo\\Bar"))
+	    '(("wasFound" . t)
+	      ("class" . "\\Foo\\Bar")
+	      ("shortName" . "Bar")
+	      ("isTrait" . nil)
+	      ("isClass" . t)
+	      ("isAbstract" . nil)
+	      ("isInterface" . nil)
+	      ("parents" . nil)
+	      ("values" .
+	       (("foo" . (("isMethod" . t)
+			  ("isProperty" . nil)
+			  ("isPublic" . t)
+			  ("isProtected" . nil)
+			  ("isPrivate" . nil)
+			  ("isStatic" . nil))))))))
+      (should (equal (company-php-member--candidates)
+		     '("foo"))))))

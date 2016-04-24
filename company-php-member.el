@@ -28,3 +28,27 @@
       (if (re-search-backward "\\<namespace\s+\\(\\(?:[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\\\\\\)*[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\\)" nil t)
 	  (concat (match-string 1) "\\" class-name)
 	class-name))))
+
+(defun company-php-member--get-candidates (prefix)
+  (company-php-member--fetch-candidates)
+  (mapcar
+   (lambda (value)
+     (car value))
+   company-php-member--candidates))
+
+(defun company-php-member--fetch-candidates ()
+  (setq company-php-member--candidates
+	(cdr (assoc "values"
+		    (company-php--run-helper
+		     "methods"
+		     (company-php-member--get-full-class-name))))))
+
+;;;### autoload
+(defun company-php-member-backend (command &optional arg &rest ignored)
+  "Company backend for PHP class members completion."
+  (interactive (list 'interactive))
+
+  (cl-case command
+    (interactive (company-begin-backend 'company-php-member-backend))
+    (prefix      (company-php-member--prefix))
+    (candidates  (company-php-member--get-candidates arg))))

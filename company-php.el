@@ -38,4 +38,20 @@
     (message index-file-name)
     (json-read-file index-file-name)))
 
+(defun company-php--run-helper (method arg)
+  "Run external PHP helper"
+  (let* ((shell-result (shell-command-to-string
+			(combine-and-quote-strings
+			 (list
+			  company-php-program
+			  (concat company-php-external-helper-dir "/parser.php")
+			  company-php-project-path
+			  (concat "--" method)
+			  arg))))
+	 (json-array-type 'list)
+	 (json-false nil)
+	 (json-key-type 'string))
+    (json-read-from-string shell-result)))
+
+
 (provide 'company-php)
