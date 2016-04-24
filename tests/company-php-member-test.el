@@ -34,3 +34,18 @@
      ("$foo->bar->baz" . ("$foo" "bar"))
      ("$foo->bar()->baz" . ("$foo" "bar"))
      ("$foo->bar (23, 42)->baz" . ("$foo" "bar")))))
+
+(ert-deftest company-php-member--get-full-class-name ()
+  (mapcar
+   (lambda (config)
+     (with-temp-buffer
+       (let ((php-mode-hook nil))
+	 (php-mode))
+       (insert (car config))
+       (should (equal (company-php-member--get-full-class-name)
+		      (cdr config)))))
+   '(("class Foo { }" . "Foo")
+     ("class Bar extends Foo { }" . "Bar")
+     ("class Baz implements \\Countable { }" . "Baz")
+     ("namespace Foo\\Bar;
+class Baz { }" . "Foo\\Bar\\Baz"))))

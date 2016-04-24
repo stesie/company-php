@@ -20,3 +20,11 @@
       (push (match-string 1) result))
 
     (reverse result)))
+
+(defun company-php-member--get-full-class-name ()
+  (save-excursion
+    (re-search-backward "\\<class\s+\\([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\\)")
+    (let ((class-name (match-string 1)))
+      (if (re-search-backward "\\<namespace\s+\\(\\(?:[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\\\\\\)*[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\\)" nil t)
+	  (concat (match-string 1) "\\" class-name)
+	class-name))))
