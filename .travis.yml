@@ -1,0 +1,9 @@
+before_install:
+  - sudo apt-get update
+  - sudo apt-get -y install emacs24
+
+install:
+  - emacs -batch -l package -f package-initialize -f package-refresh-contents --eval "(package-install 'php-mode)"
+
+script:
+  - ./run-tests.sh
