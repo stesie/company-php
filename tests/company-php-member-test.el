@@ -82,7 +82,7 @@ class Bar
       (should (equal (company-php-member--get-candidates "")
 		     '("foo"))))))
 
-(ert-deftest company-php-member--guess-class-from-typehint-test ()
+(ert-deftest company-php-member--guess-type-from-typehint-test ()
   (with-temp-buffer
     (let ((php-mode-hook nil))
       (php-mode))
@@ -92,10 +92,10 @@ class Bar
     {
         ")
     (should (equal
-	     (company-php-member--guess-class-from-typehint "$bar")
+	     (company-php-member--guess-type-from-typehint "$bar")
 	     '("Bar" . 37)))))
 
-(ert-deftest company-php-member--guess-class-from-typehint-mismatch ()
+(ert-deftest company-php-member--guess-type-from-typehint-mismatch ()
   (with-temp-buffer
     (let ((php-mode-hook nil))
       (php-mode))
@@ -105,10 +105,10 @@ class Bar
     {
         ")
     (should (equal
-	     (company-php-member--guess-class-from-typehint "$foo")
+	     (company-php-member--guess-type-from-typehint "$foo")
 	     nil))))
 
-(ert-deftest company-php-member--guess-class-from-typehint-considers-range ()
+(ert-deftest company-php-member--guess-type-from-typehint-considers-range ()
   (with-temp-buffer
     (let ((php-mode-hook nil))
       (php-mode))
@@ -123,5 +123,58 @@ class Bar
     {
         ")
     (should (equal
-	     (company-php-member--guess-class-from-typehint "$foo")
+	     (company-php-member--guess-type-from-typehint "$foo")
+	     nil))))
+
+(ert-deftest company-php-member--guess-type-from-docblock ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "class Bar
+{
+    /**
+     * @param Bar $bar
+     */
+    public function foo($bar)
+    {
+        ")
+    (should (equal
+	     (company-php-member--guess-type-from-docblock "$bar")
+	     '("Bar" . 43)))))
+
+(ert-deftest company-php-member--guess-type-from-docblock-missing ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "class Bar
+{
+    /**
+     * @param Foo $foo
+     */
+    public function foo($foo, $bar)
+    {
+        ")
+    (should (equal
+	     (company-php-member--guess-type-from-docblock "$bar")
+	     nil))))
+
+(ert-deftest company-php-member--guess-type-from-docblock-no-docblock ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "class Bar
+{
+    /**
+     * @param Bar $bar
+     */
+    public function bar($bar)
+    {
+        echo 23;
+    }
+
+    public function foo($bar)
+    {
+        ")
+    (should (equal
+	     (company-php-member--guess-type-from-docblock "$bar")
 	     nil))))

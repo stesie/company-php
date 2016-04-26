@@ -53,8 +53,8 @@
     (prefix      (company-php-member--prefix))
     (candidates  (company-php-member--get-candidates arg))))
 
-(defun company-php-member--guess-class-from-typehint (var-name)
-  "Try to guess class of variable from typehint"
+(defun company-php-member--guess-type-from-typehint (var-name)
+  "Try to guess type of variable from typehint"
   (save-excursion
     (php-beginning-of-defun)
     (let ((scope (point)))
@@ -65,3 +65,16 @@
 	   scope 'noerror)
 	  (cons (match-string 1) (point))
 	nil))))
+
+(defun company-php-member--guess-type-from-docblock (var-name)
+  "Try to guess type of variable from function docblock"
+  (save-excursion
+    (php-beginning-of-defun)
+    (when (looking-back "\\*\\/\s*\n")
+      (let ((scope (point)))
+	(re-search-backward "\\/\\*\\*")
+	(if (re-search-forward
+	     (concat "@param\s+\\([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\\)\s+"
+		     (regexp-quote var-name))
+	     scope 'noerror)
+	    (cons (match-string 1) (point)))))))
