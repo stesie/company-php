@@ -79,5 +79,49 @@ class Bar
 			  ("isProtected" . nil)
 			  ("isPrivate" . nil)
 			  ("isStatic" . nil))))))))
-      (should (equal (company-php-member--candidates)
+      (should (equal (company-php-member--get-candidates "")
 		     '("foo"))))))
+
+(ert-deftest company-php-member--guess-class-from-typehint-test ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "class Bar
+{
+    public function foo(Bar $bar)
+    {
+        ")
+    (should (equal
+	     (company-php-member--guess-class-from-typehint "$bar")
+	     '("Bar" . 37)))))
+
+(ert-deftest company-php-member--guess-class-from-typehint-mismatch ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "class Bar
+{
+    public function foo(Bar $bar)
+    {
+        ")
+    (should (equal
+	     (company-php-member--guess-class-from-typehint "$foo")
+	     nil))))
+
+(ert-deftest company-php-member--guess-class-from-typehint-considers-range ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "class Bar
+{
+    public function bar(Foo $foo)
+    {
+        /* nothing here */
+    }
+
+    public function foo(Bar $bar)
+    {
+        ")
+    (should (equal
+	     (company-php-member--guess-class-from-typehint "$foo")
+	     nil))))

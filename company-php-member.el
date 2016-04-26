@@ -52,3 +52,16 @@
     (interactive (company-begin-backend 'company-php-member-backend))
     (prefix      (company-php-member--prefix))
     (candidates  (company-php-member--get-candidates arg))))
+
+(defun company-php-member--guess-class-from-typehint (var-name)
+  "Try to guess class of variable from typehint"
+  (save-excursion
+    (php-beginning-of-defun)
+    (let ((scope (point)))
+      (re-search-forward ")")		; goto end of function parameters
+      (if (re-search-backward
+	   (concat "\\<\\([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\\)\s+"
+		   (regexp-quote var-name))
+	   scope 'noerror)
+	  (cons (match-string 1) (point))
+	nil))))
