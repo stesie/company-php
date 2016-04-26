@@ -62,7 +62,7 @@
       (if (re-search-backward
 	   (concat "\\<\\([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\\)\s+"
 		   (regexp-quote var-name))
-	   scope 'noerror)
+	   scope t)
 	  (cons (match-string 1) (point))
 	nil))))
 
@@ -76,5 +76,24 @@
 	(if (re-search-forward
 	     (concat "@param\s+\\([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\\)\s+"
 		     (regexp-quote var-name))
-	     scope 'noerror)
+	     scope t)
+	    (cons (match-string 1) (point)))))))
+
+(defun company-php-member--guess-type-from-variable-docblock (var-name)
+  "Try to guess type of variable from function internal variable docblock."
+  (save-excursion
+    (let ((scope (point)))
+      (php-beginning-of-defun)
+      (or
+       ;; try to match @var ClassName $inst
+       (and (re-search-forward (concat "\\/\\*\\*[\s\n]*\\(?:\\*\s+\\)?"
+				       "@var\s+\\([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\\)\s+"
+				       (regexp-quote var-name))
+			       scope t)
+	    (cons (match-string 1) (point)))
+       ;; try to match @var $inst ClassName
+       (and (re-search-forward (concat "\\/\\*\\*[\s\n]*\\(?:\\*\s+\\)?"
+				       "@var\s+" (regexp-quote var-name)
+				       "\s+\\([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\\)")
+			       scope t)
 	    (cons (match-string 1) (point)))))))

@@ -178,3 +178,66 @@ class Bar
     (should (equal
 	     (company-php-member--guess-type-from-docblock "$bar")
 	     nil))))
+
+(ert-deftest company-php-member--guess-type-from-variable-docblock ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "class Bar
+{
+    public function foo()
+    {
+        /**
+         * @var Bar $bar
+         */
+        $bar = $this->somethingReturningSomething();
+        ")
+    (should (equal
+	     (company-php-member--guess-type-from-variable-docblock "$bar")
+	     '("Bar" . 81)))))
+
+(ert-deftest company-php-member--guess-type-from-variable-docblock-reverse-notation ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "class Bar
+{
+    public function foo()
+    {
+        /**
+         * @var $bar Bar
+         */
+        $bar = $this->somethingReturningSomething();
+        ")
+    (should (equal
+	     (company-php-member--guess-type-from-variable-docblock "$bar")
+	     '("Bar" . 81)))))
+
+(ert-deftest company-php-member--guess-type-from-variable-docblock-inline ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "class Bar
+{
+    public function foo()
+    {
+        /** @var Bar $bar */
+        $bar = $this->somethingReturningSomething();
+        ")
+    (should (equal
+	     (company-php-member--guess-type-from-variable-docblock "$bar")
+	     '("Bar" . 70)))))
+
+(ert-deftest company-php-member--guess-type-from-variable-docblock-none ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "class Bar
+{
+    public function foo()
+    {
+        $bar = $this->somethingReturningSomething();
+        ")
+    (should (equal
+	     (company-php-member--guess-type-from-variable-docblock "$bar")
+	     nil))))
