@@ -1,3 +1,6 @@
+(require 'php-mode)
+(require 'company-php-member)
+
 (ert-deftest company-php-member--prefix-test ()
   (mapcar
    (lambda (config)

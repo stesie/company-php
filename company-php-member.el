@@ -1,3 +1,5 @@
+(require 'company-php-variable)
+
 (setq company-php-member--prefix-regex
       "\\(?:\\$[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\\)\s*->\s*\\(?:[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\s*\\(?:(.*?)\\)?\s*->\s*\\)*\\([a-zA-Z_\x7f-\xff]?[a-zA-Z0-9_\x7f-\xff]*\\)")
 
@@ -97,3 +99,5 @@
 				       "\s+\\([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\\)")
 			       scope t)
 	    (cons (match-string 1) (point)))))))
+
+(provide 'company-php-member)

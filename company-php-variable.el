@@ -37,3 +37,5 @@
 	(unless (member (match-string 0) variables)
 	  (push (match-string 0) variables)))
       variables)))
+
+(provide 'company-php-variable)

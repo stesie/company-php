@@ -1,3 +1,5 @@
+(require 'company-php-class)
+
 (ert-deftest company-php-class--prefix-test ()
   (mapcar
    (lambda (config)

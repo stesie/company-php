@@ -1,3 +1,6 @@
+(require 'php-mode)
+(require 'company-php-variable)
+
 (ert-deftest company-php-variable--prefix-test ()
   (mapcar
    (lambda (config)
