@@ -43,10 +43,11 @@
 	       "$this")))))
 
 (ert-deftest company-php-variable--candidates ()
-  (flet ((company-php-variable--extract-variables ()
-						  '("$the_a"
-						    "$the_arg"
-						    "$this")))
+  (cl-letf (((symbol-function 'company-php-variable--extract-variables)
+	     (lambda ()
+	       '("$the_a"
+		 "$the_arg"
+		 "$this"))))
     (should (equal
 	     (company-php-variable--candidates "$the_a")
 	     '("$the_arg")))))
