@@ -245,3 +245,82 @@ class Bar
     (should (equal
 	     (company-php-member--guess-type-from-variable-docblock "$bar")
 	     nil))))
+
+(ert-deftest company-php-member--guess-type-from-assignment-new ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "class Bar
+{
+    public function foo()
+    {
+        $bar = new Foo();
+        ")
+    (should (equal
+	     (company-php-member--guess-type-from-assignment "$bar")
+	     '("Foo" . 53)))))
+
+(ert-deftest company-php-member--guess-type-from-assignment-new-2 ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "class Bar
+{
+    public function foo()
+    {
+        $bar = new Foo();
+        $bar = new Bar();
+        ")
+    (should (equal
+	     (company-php-member--guess-type-from-assignment "$bar")
+	     '("Bar" . 79)))))
+
+(ert-deftest company-php-member--guess-type-from-assignment-new-3 ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "class Bar
+{
+    public function foo()
+    {
+        $bar = new Foo();
+        $blarfoo = new Bar();
+        ")
+    (should (equal
+	     (company-php-member--guess-type-from-assignment "$bar")
+	     '("Foo" . 53)))))
+
+(ert-deftest company-php-member--guess-type-from-assignment-new-none ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "class Bar
+{
+    public function foo()
+    {
+        $bar = new Foo();
+        $bar = new Bar();
+        ")
+    (should (equal
+	     (company-php-member--guess-type-from-assignment "$foo")
+	     nil))))
+
+(ert-deftest company-php-member--guess-type-from-assignment-new-in-other-method ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "class Bar
+{
+    public function foo()
+    {
+        $foo = new Foo();
+        $foo = new Bar();
+    }
+
+    public function foo()
+    {
+        $bar = 23;
+        ")
+    (should (equal
+	     (company-php-member--guess-type-from-assignment "$foo")
+	     nil))))

@@ -3,6 +3,9 @@
 (setq company-php-member--prefix-regex
       "\\(?:\\$[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\\)\s*->\s*\\(?:[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\s*\\(?:(.*?)\\)?\s*->\s*\\)*\\([a-zA-Z_\x7f-\xff]?[a-zA-Z0-9_\x7f-\xff]*\\)")
 
+(setq company-php-member--classname-regex
+      "\\([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\\)")
+
 (defun company-php-member--prefix ()
   "Get completion prefix"
   (and
@@ -99,5 +102,24 @@
 				       "\s+\\([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\\)")
 			       scope t)
 	    (cons (match-string 1) (point)))))))
+
+(defun company-php-member--guess-type-from-assignment (var-name)
+  "Try to guess type of variable from the last variable assignment."
+  (let ((scope (save-excursion
+		 (php-beginning-of-defun)
+		 (point)))
+	result)
+    (save-excursion
+      (while (and
+	      (not result)
+	      (> (point) scope))
+	(when (looking-at (concat (regexp-quote var-name)
+				  "\s*=\s*new\s+"
+				  company-php-member--classname-regex))
+	  (setq result (cons (match-string 1) (point))))
+
+	(c-beginning-of-statement 1))
+      result)))
+
 
 (provide 'company-php-member)
