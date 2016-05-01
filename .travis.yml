@@ -1,12 +1,13 @@
 sudo: required
 dist: trusty
+language: generic
 
 before_install:
-  - sudo apt-get update
+  - sudo apt-get -qq update
   - sudo apt-get -y install emacs24
 
 install:
-  - emacs -batch -l package -f package-initialize -f package-refresh-contents --eval "(package-install 'php-mode)"
+  - emacs --batch --eval "(progn (require 'package) (package-initialize) (add-to-list 'package-archives '(\"melpa\" . \"http://melpa.org/packages/\") t) (package-refresh-contents) (package-install 'php-mode) (package-install 'company))"
 
 script:
   - ./run-tests.sh
