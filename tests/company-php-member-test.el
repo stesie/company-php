@@ -1,4 +1,5 @@
 (require 'php-mode)
+(require 'company-php)
 (require 'company-php-member)
 
 (ert-deftest company-php-member--prefix-test ()
