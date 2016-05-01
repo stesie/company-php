@@ -122,7 +122,7 @@
 	      (> (point) scope))
 	(when (looking-at (concat (regexp-quote var-name)
 				  "\s*=\s*new\s+"
-				  "\\(" company-php-member--classname-regex "\\)"))
+				  "\\(" company-php-member--classpath-regex "\\)"))
 	  (setq result (cons (match-string 1) (point))))
 
 	(c-beginning-of-statement 1))

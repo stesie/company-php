@@ -383,6 +383,21 @@ class Bar
 	     (company-php-member--guess-type-from-assignment "$bar")
 	     '("Foo" . 53)))))
 
+(ert-deftest company-php-member--guess-type-from-assignment-new-fqcn ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "class Bar
+{
+    public function foo()
+    {
+        $bar = new \\Some\\Other\\Foo();
+        $blarfoo = new Bar();
+        ")
+    (should (equal
+	     (company-php-member--guess-type-from-assignment "$bar")
+	     '("\\Some\\Other\\Foo" . 53)))))
+
 (ert-deftest company-php-member--guess-type-from-assignment-new-none ()
   (with-temp-buffer
     (let ((php-mode-hook nil))
