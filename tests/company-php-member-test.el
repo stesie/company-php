@@ -174,6 +174,22 @@ class Bar
 	     (company-php-member--guess-type-from-docblock "$bar")
 	     '("Bar" . 43)))))
 
+(ert-deftest company-php-member--guess-type-from-docblock-fqcn ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "class Bar
+{
+    /**
+     * @param \\Some\\Nice\\Bar $bar
+     */
+    public function foo($bar)
+    {
+        ")
+    (should (equal
+	     (company-php-member--guess-type-from-docblock "$bar")
+	     '("\\Some\\Nice\\Bar" . 54)))))
+
 (ert-deftest company-php-member--guess-type-from-docblock-missing ()
   (with-temp-buffer
     (let ((php-mode-hook nil))
@@ -228,6 +244,23 @@ class Bar
 	     (company-php-member--guess-type-from-variable-docblock "$bar")
 	     '("Bar" . 81)))))
 
+(ert-deftest company-php-member--guess-type-from-variable-docblock-fqcn ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "class Bar
+{
+    public function foo()
+    {
+        /**
+         * @var \\Some\\Nice\\Bar $bar
+         */
+        $bar = $this->somethingReturningSomething();
+        ")
+    (should (equal
+	     (company-php-member--guess-type-from-variable-docblock "$bar")
+	     '("\\Some\\Nice\\Bar" . 92)))))
+
 (ert-deftest company-php-member--guess-type-from-variable-docblock-reverse-notation ()
   (with-temp-buffer
     (let ((php-mode-hook nil))
@@ -245,6 +278,23 @@ class Bar
 	     (company-php-member--guess-type-from-variable-docblock "$bar")
 	     '("Bar" . 81)))))
 
+(ert-deftest company-php-member--guess-type-from-variable-docblock-reverse-notation-fqcn ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "class Bar
+{
+    public function foo()
+    {
+        /**
+         * @var $bar \\Some\\Nice\\Bar
+         */
+        $bar = $this->somethingReturningSomething();
+        ")
+    (should (equal
+	     (company-php-member--guess-type-from-variable-docblock "$bar")
+	     '("\\Some\\Nice\\Bar" . 92)))))
+
 (ert-deftest company-php-member--guess-type-from-variable-docblock-inline ()
   (with-temp-buffer
     (let ((php-mode-hook nil))
@@ -259,6 +309,21 @@ class Bar
     (should (equal
 	     (company-php-member--guess-type-from-variable-docblock "$bar")
 	     '("Bar" . 70)))))
+
+(ert-deftest company-php-member--guess-type-from-variable-docblock-inline-fqcn ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "class Bar
+{
+    public function foo()
+    {
+        /** @var \\Some\\Nice\\Bar $bar */
+        $bar = $this->somethingReturningSomething();
+        ")
+    (should (equal
+	     (company-php-member--guess-type-from-variable-docblock "$bar")
+	     '("\\Some\\Nice\\Bar" . 81)))))
 
 (ert-deftest company-php-member--guess-type-from-variable-docblock-none ()
   (with-temp-buffer
