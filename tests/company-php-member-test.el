@@ -2,6 +2,20 @@
 (require 'company-php)
 (require 'company-php-member)
 
+(ert-deftest company-php-member--classpath-regex ()
+  (mapcar
+   (lambda (config)
+     (with-temp-buffer
+       (let ((php-mode-hook nil))
+	 (php-mode))
+       (insert (car config))
+       (beginning-of-buffer)
+       (should (equal (looking-at company-php-member--classpath-regex) (cdr config)))))
+   '(("Foo" . t)
+     ("Foo\Bar" . t)
+     ("Foo\Bar\Baz" . t)
+     ("\Foo\Bar" . t))))
+
 (ert-deftest company-php-member--prefix-test ()
   (mapcar
    (lambda (config)
@@ -97,7 +111,7 @@ class Bar
         ")
     (should (equal
 	     (company-php-member--guess-type-from-typehint "$bar")
-	     '("Bar" . 37)))))
+	     '("Bar" . 45)))))
 
 (ert-deftest company-php-member--guess-type-from-typehint-mismatch ()
   (with-temp-buffer
@@ -129,6 +143,20 @@ class Bar
     (should (equal
 	     (company-php-member--guess-type-from-typehint "$foo")
 	     nil))))
+
+
+(ert-deftest company-php-member--guess-type-from-typehint-fqcn ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "class Bar
+{
+    public function foo(\\Assert\\Assertion $assertion)
+    {
+        ")
+    (should (equal
+	     (company-php-member--guess-type-from-typehint "$assertion")
+	     '("\\Assert\\Assertion" . 65)))))
 
 (ert-deftest company-php-member--guess-type-from-docblock ()
   (with-temp-buffer

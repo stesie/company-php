@@ -4,7 +4,13 @@
       "\\(?:\\$[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\\)\s*->\s*\\(?:[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\s*\\(?:(.*?)\\)?\s*->\s*\\)*\\([a-zA-Z_\x7f-\xff]?[a-zA-Z0-9_\x7f-\xff]*\\)")
 
 (setq company-php-member--classname-regex
-      "\\([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\\)")
+      "\\<[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\\>")
+
+(setq company-php-member--classpath-regex
+      (concat "\\\\?"
+	      "\\(?:" company-php-member--classname-regex "\\\\" "\\)*"
+	      company-php-member--classname-regex))
+
 
 (defun company-php-member--prefix ()
   "Get completion prefix"
@@ -62,10 +68,11 @@
   "Try to guess type of variable from typehint"
   (save-excursion
     (php-beginning-of-defun)
-    (let ((scope (point)))
-      (re-search-forward ")")		; goto end of function parameters
-      (if (re-search-backward
-	   (concat "\\<\\([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\\)\s+"
+    (let ((scope (save-excursion
+		   (re-search-forward ")") ; goto end of function parameters
+		   (point))))
+      (if (re-search-forward
+	   (concat "\\(" company-php-member--classpath-regex "\\)\s+"
 		   (regexp-quote var-name))
 	   scope t)
 	  (cons (match-string 1) (point))
@@ -115,7 +122,7 @@
 	      (> (point) scope))
 	(when (looking-at (concat (regexp-quote var-name)
 				  "\s*=\s*new\s+"
-				  company-php-member--classname-regex))
+				  "\\(" company-php-member--classname-regex "\\)"))
 	  (setq result (cons (match-string 1) (point))))
 
 	(c-beginning-of-statement 1))
