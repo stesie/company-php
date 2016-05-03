@@ -35,7 +35,6 @@
 	   company-php-external-helper-dir "/../indexes/"
 	   (secure-hash 'md5 company-php-project-path)
 	   "/index." name ".json")))
-    (message index-file-name)
     (json-read-file index-file-name)))
 
 (defun company-php--run-helper (method arg)

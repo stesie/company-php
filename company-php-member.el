@@ -1,3 +1,4 @@
+(require 'company-php)
 (require 'company-php-variable)
 
 (setq company-php-member--prefix-regex
@@ -83,7 +84,6 @@
     (let (result)
       (dolist (fn company-php-member--guess-type-function-list)
 	(let ((match (funcall fn (car stack))))
-	  (message "%s" match)
 	  (when (and match
 		     (or (not result)
 			 (> (cdr match) (cdr result))))
