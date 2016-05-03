@@ -62,11 +62,54 @@
        (insert (car config))
        (should (equal (company-php-member--get-full-class-name)
 		      (cdr config)))))
-   '(("class Foo { }" . "Foo")
-     ("class Bar extends Foo { }" . "Bar")
-     ("class Baz implements \\Countable { }" . "Baz")
+   '(("class Foo { }" . "\\Foo")
+     ("class Bar extends Foo { }" . "\\Bar")
+     ("class Baz implements \\Countable { }" . "\\Baz")
      ("namespace Foo\\Bar;
-class Baz { }" . "Foo\\Bar\\Baz"))))
+class Baz { }" . "\\Foo\\Bar\\Baz"))))
+
+(ert-deftest company-php-member--qualify-class-name-simple-namespace ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "namespace Foo;")
+    (should (string= (company-php-member--qualify-class-name "Bar")
+		     "\\Foo\\Bar"))))
+
+(ert-deftest company-php-member--qualify-class-name-namespace-with-slash ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "namespace Foo\\Bar;")
+    (should (string= (company-php-member--qualify-class-name "Baz")
+		     "\\Foo\\Bar\\Baz"))))
+
+(ert-deftest company-php-member--qualify-class-name-simple-fqcn ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "namespace Foo;")
+    (should (string= (company-php-member--qualify-class-name "\\Bar")
+		     "\\Bar"))))
+
+(ert-deftest company-php-member--qualify-class-name-use-with-alias ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "namespace Foo;
+use My\\Full\\Classname as Another;")
+    (should (string= (company-php-member--qualify-class-name "Another")
+		     "\\My\\Full\\Classname"))))
+
+(ert-deftest company-php-member--qualify-class-name-use ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "namespace Foo;
+use My\\Full\\Classname;")
+    (should (string= (company-php-member--qualify-class-name "Classname")
+		     "\\My\\Full\\Classname"))))
+
 
 (ert-deftest company-php-member--candidates-test-this ()
   (with-temp-buffer
@@ -81,7 +124,7 @@ class Bar
     (cl-letf (((symbol-function 'company-php--run-helper)
 	       (lambda (command class-name)
 		 (should (string= command "methods"))
-		 (should (string= class-name "Foo\\Bar"))
+		 (should (string= class-name "\\Foo\\Bar"))
 		 '(("wasFound" . t)
 		   ("class" . "\\Foo\\Bar")
 		   ("shortName" . "Bar")
