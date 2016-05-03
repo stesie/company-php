@@ -67,9 +67,20 @@
 (defun company-php-member--get-candidates (prefix)
   (company-php-member--fetch-candidates)
   (mapcar
-   (lambda (value)
+   (lambda (value)			; map name from members
      (car value))
-   company-php-member--candidates))
+
+   (cl-remove-if-not
+    (lambda (elm)
+      (let ((info (if (= (length elm) 2) (cadr elm) elm)))
+	(and
+	 ;; ignore static properties (but accept methods)
+	 (or (not (cdr (assoc "isStatic" info)))
+	     (cdr (assoc "isMethod" info)))
+
+	 ;; match only members having names starting with "prefix"
+	 (string-prefix-p prefix (car elm)))))
+    company-php-member--candidates)))
 
 (defun company-php-member--fetch-candidates ()
   (let ((class-name (company-php-member--get-class-name-from-stack
@@ -101,7 +112,32 @@
   (cl-case command
     (interactive (company-begin-backend 'company-php-member-backend))
     (prefix      (company-php-member--prefix))
+    (meta        (company-php-member--get-meta arg))
+    (annotation  (company-php-member--get-annotation arg))
     (candidates  (company-php-member--get-candidates arg))))
+
+(defun company-php-member--get-meta (member)
+  (let* ((member-info   (assoc member company-php-member--candidates))
+	 (args          (assoc "args" member-info))
+	 (descriptions  (assoc "descriptions" args)))
+    (cdr (assoc "short" descriptions))))
+
+(defun company-php-member--get-annotation (member)
+  (let* ((member-info   (assoc member company-php-member--candidates))
+	 (args          (assoc "args" member-info))
+	 (parameters    (cdr (assoc "parameters" args)))
+	 (optionals     (cdr (assoc "optionals" args)))
+	 (return-type   (cdr (assoc "type" (assoc "return" args)))))
+
+    (concat "("
+	    (mapconcat 'identity parameters ", ")
+	    (when optionals
+	      (concat (when parameters " ")
+		      "["
+		      (when parameters ", ")
+		      (mapconcat 'identity optionals ", ")
+		      "]"))
+	    ") -> " return-type)))
 
 (defun company-php-member--guess-type-from-typehint (var-name)
   "Try to guess type of variable from typehint"
