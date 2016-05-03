@@ -71,11 +71,27 @@
    company-php-member--candidates))
 
 (defun company-php-member--fetch-candidates ()
-  (setq company-php-member--candidates
-	(cdr (assoc "values"
-		    (company-php--run-helper
-		     "methods"
-		     (company-php-member--get-full-class-name))))))
+  (let ((class-name (company-php-member--get-class-name-from-stack
+		     (company-php-member--get-stack))))
+    (setq company-php-member--candidates
+	  (cdr (assoc "values"
+		      (company-php--run-helper "methods" class-name))))))
+
+(defun company-php-member--get-class-name-from-stack (stack)
+  (if (string= (car stack) "$this")
+      (company-php-member--get-full-class-name)
+    (let (result)
+      (dolist (fn company-php-member--guess-type-function-list)
+	(let ((match (funcall fn (car stack))))
+	  (message "%s" match)
+	  (when (and match
+		     (or (not result)
+			 (> (cdr match) (cdr result))))
+	    (setq result match))))
+
+      (when result
+	(company-php-member--qualify-class-name (car result))))))
+
 
 ;;;### autoload
 (defun company-php-member-backend (command &optional arg &rest ignored)
@@ -151,5 +167,10 @@
 	(c-beginning-of-statement 1))
       result)))
 
+
+(setq company-php-member--guess-type-function-list
+      '(company-php-member--guess-type-from-typehint
+	company-php-member--guess-type-from-docblock
+	company-php-member--guess-type-from-assignment))
 
 (provide 'company-php-member)
