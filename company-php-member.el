@@ -66,21 +66,36 @@
 
 (defun company-php-member--get-candidates (prefix)
   (company-php-member--fetch-candidates)
-  (mapcar
-   (lambda (value)			; map name from members
-     (car value))
+  (let* ((current-class-name (substring (company-php-member--get-full-class-name) 1))
+	 (current-class-parents (cdr (assoc "parents" (company-php--run-helper "methods" current-class-name)))))
+    (mapcar
+     (lambda (value)			; map name from members
+       (car value))
 
-   (cl-remove-if-not
-    (lambda (elm)
-      (let ((info (if (= (length elm) 2) (cadr elm) elm)))
-	(and
-	 ;; ignore static properties (but accept methods)
-	 (or (not (cdr (assoc "isStatic" info)))
-	     (cdr (assoc "isMethod" info)))
+     (cl-remove-if-not
+      (lambda (elm)
+	(let* ((info (if (= (length elm) 2) (cadr elm) elm))
+	       (declaring-class (cdr (assoc "name" (assoc "declaringClass" info)))))
 
-	 ;; match only members having names starting with "prefix"
-	 (string-prefix-p prefix (car elm)))))
-    company-php-member--candidates)))
+	  (and
+	   ;; ignore static properties (but accept methods)
+	   (or (not (cdr (assoc "isStatic" info)))
+	       (cdr (assoc "isMethod" info)))
+
+	   ;; ignore invisible members
+	   (or (cdr (assoc "isPublic" info))
+	       (and (cdr (assoc "isProtected" info))
+		    (member declaring-class current-class-parents))
+	       (and (or (cdr (assoc "isPrivate" info))
+			(cdr (assoc "isProtected" info)))
+		    (string= declaring-class current-class-name)))
+
+	   ;; hide __construct
+	   (not (string= "__construct" (car elm)))
+
+	   ;; match only members having names starting with "prefix"
+	   (string-prefix-p prefix (car elm)))))
+      company-php-member--candidates))))
 
 (defun company-php-member--fetch-candidates ()
   (let ((class-name (company-php-member--get-class-name-from-stack
