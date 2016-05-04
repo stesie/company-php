@@ -98,8 +98,8 @@
       company-php-member--candidates))))
 
 (defun company-php-member--fetch-candidates ()
-  (let ((class-name (company-php-member--get-class-name-from-stack
-		     (company-php-member--get-stack))))
+  (let ((class-name (substring (company-php-member--get-class-name-from-stack
+				(company-php-member--get-stack)) 1)))
     (setq company-php-member--candidates
 	  (cdr (assoc "values"
 		      (company-php--run-helper "methods" class-name))))))

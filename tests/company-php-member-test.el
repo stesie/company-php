@@ -124,7 +124,7 @@ class Bar
     (cl-letf (((symbol-function 'company-php--run-helper)
 	       (lambda (command class-name)
 		 (should (string= command "methods"))
-		 (should (string= class-name "\\Foo\\Bar"))
+		 (should (string= class-name "Foo\\Bar"))
 		 '(("wasFound" . t)
 		   ("class" . "\\Foo\\Bar")
 		   ("shortName" . "Bar")
