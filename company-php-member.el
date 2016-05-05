@@ -106,8 +106,9 @@
 
 (defun company-php-member--get-class-name-from-stack (stack)
   (let ((type (company-php-member--get-variable-type (car stack))))
-    (when (cdr stack)
-      (setq type (company-php-member--get-member-type type (cadr stack))))
+    (while (cdr stack)
+      (setq stack (cdr stack))
+      (setq type (company-php-member--get-member-type type (car stack))))
     type))
 
 

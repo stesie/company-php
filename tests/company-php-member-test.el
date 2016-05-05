@@ -555,3 +555,48 @@ class Bar
 		   ("parents" . nil)))))
       (should (equal (company-php-member--get-class-name-from-stack '("$this" "file"))
 		     "\\Foo\\File")))))
+
+(ert-deftest company-php-member--get-class-name-from-stack-doubly-indirect ()
+  "Test doubly indirect stack resolve"
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "namespace Foo;
+class Bar
+{
+    /**
+     * @var File $file
+     */
+    private $file;
+
+    public function foo()
+    {
+        $this->file->getRange()->")
+    (cl-letf (((symbol-function 'company-php--run-helper)
+	       (lambda (command class-name member-name)
+		 (should (string= command "autocomplete"))
+
+		 (cond ((string= class-name "\\Foo\\Bar")
+			(should (string= member-name "file"))
+			'(("wasFound" . t)
+			  ("class" . "Foo\\File")
+			  ("shortName" . "File")
+			  ("isTrait" . nil)
+			  ("isClass" . t)
+			  ("isAbstract" . nil)
+			  ("isInterface" . nil)
+			  ("parents" . nil)))
+
+		       ((string= class-name "\\Foo\\File")
+			(should (string= member-name "getRange"))
+			'(("wasFound" . t)
+			  ("class" . "Foo\\FileRange")
+			  ("shortName" . "FileRange")
+			  ("isTrait" . nil)
+			  ("isClass" . t)
+			  ("isAbstract" . nil)
+			  ("isInterface" . nil)
+			  ("parents" . nil)))))))
+
+      (should (equal (company-php-member--get-class-name-from-stack '("$this" "file" "getRange"))
+		     "\\Foo\\FileRange")))))
