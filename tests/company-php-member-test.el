@@ -475,3 +475,21 @@ class Bar
     (should (equal
 	     (company-php-member--guess-type-from-assignment "$foo")
 	     nil))))
+
+(ert-deftest company-php-member--get-class-name-from-stack-toplevel ()
+  "If the completion is on top-level, i.e. immediate member of an object
+   referenced by a variable, the guess-type-from functions need to be
+   called (and the one with max point should win)."
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "namespace Foo;
+class Bar
+{
+    public function foo(Foo $foo)
+    {
+        $foo = new Baz(); // <- type Baz overrides Foo here
+")
+    (should (equal
+	     (company-php-member--get-class-name-from-stack '("$foo"))
+	     "\\Foo\\Baz"))))

@@ -105,11 +105,14 @@
 		      (company-php--run-helper "methods" class-name))))))
 
 (defun company-php-member--get-class-name-from-stack (stack)
-  (if (string= (car stack) "$this")
+  (company-php-member--get-variable-type (car stack)))
+
+(defun company-php-member--get-variable-type (variable-name)
+  (if (string= variable-name "$this")
       (company-php-member--get-full-class-name)
     (let (result)
       (dolist (fn company-php-member--guess-type-function-list)
-	(let ((match (funcall fn (car stack))))
+	(let ((match (funcall fn variable-name)))
 	  (when (and match
 		     (or (not result)
 			 (> (cdr match) (cdr result))))
