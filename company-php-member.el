@@ -105,7 +105,11 @@
 		      (company-php--run-helper "methods" class-name))))))
 
 (defun company-php-member--get-class-name-from-stack (stack)
-  (company-php-member--get-variable-type (car stack)))
+  (let ((type (company-php-member--get-variable-type (car stack))))
+    (when (cdr stack)
+      (setq type (company-php-member--get-member-type type (cadr stack))))
+    type))
+
 
 (defun company-php-member--get-variable-type (variable-name)
   (if (string= variable-name "$this")
@@ -120,6 +124,10 @@
 
       (when result
 	(company-php-member--qualify-class-name (car result))))))
+
+(defun company-php-member--get-member-type (class-name member-name)
+  (let* ((meta-info (company-php--run-helper "autocomplete" class-name member-name)))
+    (concat "\\" (cdr (assoc "class" meta-info)))))
 
 
 ;;;### autoload

@@ -37,16 +37,17 @@
 	   "/index." name ".json")))
     (json-read-file index-file-name)))
 
-(defun company-php--run-helper (method arg)
+(defun company-php--run-helper (method &rest args)
   "Run external PHP helper"
   (let* ((shell-result (shell-command-to-string
 			(combine-and-quote-strings
-			 (list
-			  company-php-program
-			  (concat company-php-external-helper-dir "/parser.php")
-			  company-php-project-path
-			  (concat "--" method)
-			  arg))))
+			 (append
+			  (list
+			   company-php-program
+			   (concat company-php-external-helper-dir "/parser.php")
+			   company-php-project-path
+			   (concat "--" method))
+			  args))))
 	 (json-array-type 'list)
 	 (json-false nil)
 	 (json-key-type 'string))

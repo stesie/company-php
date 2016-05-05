@@ -477,9 +477,7 @@ class Bar
 	     nil))))
 
 (ert-deftest company-php-member--get-class-name-from-stack-toplevel ()
-  "If the completion is on top-level, i.e. immediate member of an object
-   referenced by a variable, the guess-type-from functions need to be
-   called (and the one with max point should win)."
+  "top-level completion just resolves type of variable"
   (with-temp-buffer
     (let ((php-mode-hook nil))
       (php-mode))
@@ -493,3 +491,67 @@ class Bar
     (should (equal
 	     (company-php-member--get-class-name-from-stack '("$foo"))
 	     "\\Foo\\Baz"))))
+
+(ert-deftest company-php-member--get-member-type ()
+  "get-member-type calls --autocomplete helper and returns class name"
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "namespace Foo;
+class Bar
+{
+    /**
+     * @var File $file
+     */
+    private $file;
+
+    public function foo()
+    {
+        $this->file->")
+    (cl-letf (((symbol-function 'company-php--run-helper)
+	       (lambda (command class-name member-name)
+		 (should (string= command "autocomplete"))
+		 (should (string= class-name "\\Foo\\Bar"))
+		 (should (string= member-name "file"))
+		 '(("wasFound" . t)
+		   ("class" . "Foo\\File")
+		   ("shortName" . "File")
+		   ("isTrait" . nil)
+		   ("isClass" . t)
+		   ("isAbstract" . nil)
+		   ("isInterface" . nil)
+		   ("parents" . nil)))))
+      (should (equal (company-php-member--get-member-type "\\Foo\\Bar" "file")
+		     "\\Foo\\File")))))
+
+(ert-deftest company-php-member--get-class-name-from-stack-indirect ()
+  "Test indirect stack resolve, resolving $this and then file'"
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "namespace Foo;
+class Bar
+{
+    /**
+     * @var File $file
+     */
+    private $file;
+
+    public function foo()
+    {
+        $this->file->")
+    (cl-letf (((symbol-function 'company-php--run-helper)
+	       (lambda (command class-name member-name)
+		 (should (string= command "autocomplete"))
+		 (should (string= class-name "\\Foo\\Bar"))
+		 (should (string= member-name "file"))
+		 '(("wasFound" . t)
+		   ("class" . "Foo\\File")
+		   ("shortName" . "File")
+		   ("isTrait" . nil)
+		   ("isClass" . t)
+		   ("isAbstract" . nil)
+		   ("isInterface" . nil)
+		   ("parents" . nil)))))
+      (should (equal (company-php-member--get-class-name-from-stack '("$this" "file"))
+		     "\\Foo\\File")))))
