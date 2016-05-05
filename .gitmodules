@@ -1,0 +1,3 @@
+[submodule "atom-autocomplete-php"]
+	path = atom-autocomplete-php
+	url = https://github.com/Peekmo/atom-autocomplete-php.git
