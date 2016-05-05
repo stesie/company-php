@@ -144,15 +144,18 @@
 	 (optionals     (cdr (assoc "optionals" args)))
 	 (return-type   (cdr (assoc "type" (assoc "return" args)))))
 
-    (concat "("
-	    (mapconcat 'identity parameters ", ")
-	    (when optionals
-	      (concat (when parameters " ")
-		      "["
-		      (when parameters ", ")
-		      (mapconcat 'identity optionals ", ")
-		      "]"))
-	    ") -> " return-type)))
+    (if (cdr (assoc "isMethod" member-info))
+	(concat "("
+		(mapconcat 'identity parameters ", ")
+		(when optionals
+		  (concat (when parameters " ")
+			  "["
+			  (when parameters ", ")
+			  (mapconcat 'identity optionals ", ")
+			  "]"))
+		") -> " return-type)
+
+      (concat " @var " return-type))))
 
 (defun company-php-member--guess-type-from-typehint (var-name)
   "Try to guess type of variable from typehint"
