@@ -95,14 +95,16 @@ By default on composer it's vendor/composer/autoload_classmap.php"
 
 (defun company-php--run-helper (method &rest args)
   "Run external PHP helper"
-  (with-temp-file (concat company-php--external-helper-dir "/tmp.php")
-    (insert "<?php "
-	    "$config = array("
-	    "'composer' => '" company-php--composer-program "',"
-	    "'php' => '" company-php--php-program "',"
-	    "'autoload' => " (company-php--insert-array company-php--autoload-files) ","
-	    "'classmap' => " (company-php--insert-array company-php--classmap-files) ","
-	    ");"))
+  (let ((self-auto-loader (company-php--get-self-auto-loader)))
+    (with-temp-file (concat company-php--external-helper-dir "/tmp.php")
+      (insert "<?php "
+	      self-auto-loader
+	      "$config = array("
+	      "'composer' => '" company-php--composer-program "',"
+	      "'php' => '" company-php--php-program "',"
+	      "'autoload' => " (company-php--insert-array company-php--autoload-files) ","
+	      "'classmap' => " (company-php--insert-array company-php--classmap-files) ","
+	      ");")))
   (let* ((shell-result (shell-command-to-string
 			(combine-and-quote-strings
 			 (append
@@ -116,6 +118,17 @@ By default on composer it's vendor/composer/autoload_classmap.php"
 	 (json-false nil)
 	 (json-key-type 'string))
     (json-read-from-string shell-result)))
+
+(defun company-php--get-self-auto-loader ()
+  "Create special __autoload implementation, that loads the visited file"
+  (concat
+   "spl_autoload_register(function($className) {"
+   "if($className === ltrim('" (company-php-member--get-full-class-name) "', '\\\\')) {"
+   "require_once '" (expand-file-name (buffer-file-name)) "';"
+   "}"
+   "});"))
+
+
 
 (defun company-php--insert-array (array)
   "Write PHP Array with strings from array"
