@@ -76,19 +76,20 @@ By default on composer it's vendor/composer/autoload_classmap.php"
    "atom-autocomplete-php/php")
   "Path to the external PHP helper")
 
-(defvar company-php-project-path nil
+(defvar company-php--project-path nil
   "Project root directory")
+(make-variable-buffer-local 'company-php--project-path)
 
 (defun company-php-read-index (name)
   "Read an index by its name (indexes/index.[name].json)"
-  (unless company-php-project-path
-    (error "company-php-project-path variable not set"))
+  (unless company-php--project-path
+    (error "company-php--project-path variable not set"))
   (let* ((json-array-type 'list)
 	 (json-key-type 'string)
 	 (index-file-name
 	  (concat
 	   company-php--external-helper-dir "/../indexes/"
-	   (secure-hash 'md5 company-php-project-path)
+	   (secure-hash 'md5 (expand-file-name company-php--project-path))
 	   "/index." name ".json")))
     (json-read-file index-file-name)))
 
@@ -106,9 +107,9 @@ By default on composer it's vendor/composer/autoload_classmap.php"
 			(combine-and-quote-strings
 			 (append
 			  (list
-			   company-php-program
+			   company-php--php-program
 			   (concat company-php--external-helper-dir "/parser.php")
-			   company-php-project-path
+			   company-php--project-path
 			   (concat "--" method))
 			  args))))
 	 (json-array-type 'list)
@@ -123,6 +124,24 @@ By default on composer it's vendor/composer/autoload_classmap.php"
    (append '("array(")
 	   (mapcar (lambda (elm) (concat "'" elm "',")) array)
 	   '(")"))))
+
+
+;;;###autoload
+(defun company-php--try-auto-enable ()
+  "Try to guess project root directory and enable company-php completion"
+  (setq company-php--project-path
+	(locate-dominating-file (buffer-file-name) "composer.json"))
+  (when company-php--project-path
+    (company-php--enable)))
+
+;;;###autoload
+(defun company-php--enable ()
+  "Enable company-php completion"
+  (interactive)
+  (add-to-list 'company-backends 'company-php-class-backend)
+  (add-to-list 'company-backends 'company-php-variable-backend)
+  (add-to-list 'company-backends 'company-php-member-backend))
+
 
 
 (provide 'company-php)
