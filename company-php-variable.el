@@ -20,7 +20,7 @@
 (defconst company-php-variable-regex
   "\\$[a-zA-Z_\x7f-\xff]?[a-zA-Z0-9_\x7f-\xff]*")
 
-;;;### autoload
+;;;###autoload
 (defun company-php-variable-backend (command &optional arg &rest ignored)
   "Company backend for PHP variable name completion."
   (interactive (list 'interactive))

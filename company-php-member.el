@@ -150,7 +150,7 @@
     (concat "\\" (cdr (assoc "class" meta-info)))))
 
 
-;;;### autoload
+;;;###autoload
 (defun company-php-member-backend (command &optional arg &rest ignored)
   "Company backend for PHP class members completion."
   (interactive (list 'interactive))

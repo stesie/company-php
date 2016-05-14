@@ -38,7 +38,6 @@
   :prefix "company-php-"
   :group 'php)
 
-;;;###autoload
 (defcustom company-php--php-program
   "/usr/bin/php"
   "Path to PHP program to run composer and reflection helper with."

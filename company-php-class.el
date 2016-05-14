@@ -24,7 +24,8 @@
 (setq company-php-class--candidates-list nil)
 (setq company-php-class--candidates-mapping nil)
 
-;;;### autoload
+
+;;;###autoload
 (defun company-php-class-backend (command &optional arg &rest ignored)
   "Company backend for PHP class name completion."
   (interactive (list 'interactive))
