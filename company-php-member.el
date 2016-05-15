@@ -86,7 +86,7 @@
 (defun company-php-member--get-candidates (prefix)
   (company-php-member--fetch-candidates)
   (let* ((current-class-name (substring (company-php-member--get-full-class-name) 1))
-	 (current-class-parents (cdr (assoc "parents" (company-php--run-helper "methods" current-class-name)))))
+	 (current-class-parents (cdr (assoc "parents" (company-php-member--get-methods current-class-name)))))
     (mapcar
      (lambda (value)			; map name from members
        (car value))
@@ -116,12 +116,19 @@
 	   (string-prefix-p prefix (car elm)))))
       company-php-member--candidates))))
 
+(setq company-php-member--methods-cache
+      (make-hash-table :test 'equal))
+
+(defun company-php-member--get-methods (class-name)
+  (or (gethash class-name company-php-member--methods-cache)
+      (puthash class-name (company-php--run-helper "methods" class-name)
+	       company-php-member--methods-cache)))
+
 (defun company-php-member--fetch-candidates ()
   (let ((class-name (substring (company-php-member--get-class-name-from-stack
 				(company-php-member--get-stack)) 1)))
     (setq company-php-member--candidates
-	  (cdr (assoc "values"
-		      (company-php--run-helper "methods" class-name))))))
+	  (cdr (assoc "values" (company-php-member--get-methods class-name))))))
 
 (defun company-php-member--get-class-name-from-stack (stack)
   (let ((type (company-php-member--get-variable-type (car stack))))
