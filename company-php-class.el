@@ -36,6 +36,17 @@
     (meta        (company-php-class--meta arg))
     (candidates  (company-php-class--candidates arg))))
 
+;;;###autoload
+(defun company-php-class--capf ()
+  "completion-at-point function for PHP class name completion."
+  (let ((prefix (company-php-class--prefix)))
+    (when prefix
+      (unless company-php-class--candidates-list
+	(company-php-class--fetch-candidates))
+      (list (match-beginning 1)
+	    (point)
+	    company-php-class--candidates-list))))
+
 (defun company-php-class--prefix ()
   "Get completion prefix"
   (and

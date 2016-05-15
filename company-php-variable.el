@@ -30,6 +30,19 @@
     (prefix      (company-php-variable--prefix))
     (candidates  (company-php-variable--candidates arg))))
 
+;;;###autoload
+(defun company-php-variable--capf ()
+  "completion-at-point function for PHP variable name completion."
+  (let ((prefix (company-php-variable--prefix)))
+    (when prefix
+      (list (match-beginning 0)
+	    (point)
+	    (cl-remove-if-not
+	     (lambda (c)
+	       (not (string= prefix c)))
+	     (company-php-variable--extract-variables))))))
+
+
 (defun company-php-variable--prefix ()
   "Get completion prefix"
   (and

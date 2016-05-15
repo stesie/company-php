@@ -162,6 +162,15 @@
     (annotation  (company-php-member--get-annotation arg))
     (candidates  (company-php-member--get-candidates arg))))
 
+;;;###autoload
+(defun company-php-member--capf ()
+  "completion-at-point function for PHP class members completion."
+  (let ((prefix (company-php-member--prefix)))
+    (when prefix
+      (list (match-beginning 1)
+	    (point)
+	    (company-php-member--get-candidates "")))))
+
 (defun company-php-member--get-meta (member)
   (let* ((member-info   (assoc member company-php-member--candidates))
 	 (args          (assoc "args" member-info))
