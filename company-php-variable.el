@@ -35,7 +35,7 @@
   (and
    (eq major-mode 'php-mode)
    (looking-back company-php-variable-regex)
-   (match-string 0)))
+   (match-string-no-properties 0)))
 
 (defun company-php-variable--candidates (prefix)
   "Get completion candidates"
@@ -53,8 +53,8 @@
 	  (variables '("$this")))
       (php-beginning-of-defun)
       (while (re-search-forward company-php-variable-regex defun-end 'noerror)
-	(unless (member (match-string 0) variables)
-	  (push (match-string 0) variables)))
+	(unless (member (match-string-no-properties 0) variables)
+	  (push (match-string-no-properties 0) variables)))
       variables)))
 
 (provide 'company-php-variable)
