@@ -51,8 +51,9 @@
   "Get completion prefix"
   (and
    (eq major-mode 'php-mode)
-   (looking-back "\\(?:use\\|new\\)\s+\\(\\(?:\\\\?[a-zA-Z_\x7f-\xff]?[a-zA-Z0-9_\x7f-\xff]*\\)*\\)")
-   (match-string 1)))
+   (let ((limit (save-excursion (c-beginning-of-statement 1) (point))))
+     (looking-back "\\(?:use\\|new\\)\s+\\(\\(?:\\\\?[a-zA-Z_\x7f-\xff]?[a-zA-Z0-9_\x7f-\xff]*\\)*\\)" limit))
+   (match-string-no-properties 1)))
 
 (defun company-php-class--meta (candidate)
   "Get completion candidate meta data"
