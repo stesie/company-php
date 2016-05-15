@@ -116,6 +116,7 @@
 	   (string-prefix-p prefix (car elm)))))
       company-php-member--candidates))))
 
+
 (setq company-php-member--methods-cache
       (make-hash-table :test 'equal))
 
@@ -123,6 +124,18 @@
   (or (gethash class-name company-php-member--methods-cache)
       (puthash class-name (company-php--run-helper "methods" class-name)
 	       company-php-member--methods-cache)))
+
+(setq company-php-member--autocomplete-cache
+      (make-hash-table :test 'equal))
+
+(defun company-php-member--get-autocomplete (class-name member-name)
+  (let ((cache-key (concat class-name "|" member-name)))
+    (or (gethash cache-key company-php-member--autocomplete-cache)
+	(puthash cache-key (company-php--run-helper "autocomplete" class-name member-name)
+		 company-php-member--autocomplete-cache))))
+
+
+
 
 (defun company-php-member--fetch-candidates ()
   (let ((class-name (substring (company-php-member--get-class-name-from-stack
@@ -153,7 +166,7 @@
 	(company-php-member--qualify-class-name (car result))))))
 
 (defun company-php-member--get-member-type (class-name member-name)
-  (let* ((meta-info (company-php--run-helper "autocomplete" class-name member-name)))
+  (let* ((meta-info (company-php-member--get-autocomplete class-name member-name)))
     (concat "\\" (cdr (assoc "class" meta-info)))))
 
 
