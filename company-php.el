@@ -151,9 +151,9 @@ By default on composer it's vendor/composer/autoload_classmap.php"
 (defun company-php--enable ()
   "Enable company-php completion"
   (interactive)
-  (add-to-list 'completion-at-point-functions 'company-php-class--capf)
-  (add-to-list 'completion-at-point-functions 'company-php-variable--capf)
-  (add-to-list 'completion-at-point-functions 'company-php-member--capf))
+  (add-hook 'completion-at-point-functions #'company-php-class--capf nil t)
+  (add-hook 'completion-at-point-functions #'company-php-variable--capf nil t)
+  (add-hook 'completion-at-point-functions #'company-php-member--capf nil t))
 
 
 
