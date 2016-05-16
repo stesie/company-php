@@ -189,7 +189,8 @@
     (when prefix
       (list (match-beginning 1)
 	    (point)
-	    (company-php-member--get-candidates "")))))
+	    (company-php-member--get-candidates "")
+	    :annotation-function #'company-php-member--get-annotation))))
 
 (defun company-php-member--get-meta (member)
   (let* ((member-info   (assoc member company-php-member--candidates))
