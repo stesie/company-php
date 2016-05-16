@@ -23,7 +23,8 @@
   (mapcar
    (lambda (config)
      (with-temp-buffer
-       (setq major-mode 'php-mode)
+       (let ((php-mode-hook nil))
+	 (php-mode))
        (insert (car config))
        (should (string= (company-php-class--prefix) (cdr config)))))
    '(("new" . nil)
@@ -39,7 +40,8 @@
   (mapcar
    (lambda (config)
      (with-temp-buffer
-       (setq major-mode 'php-mode)
+       (let ((php-mode-hook nil))
+	 (php-mode))
        (insert (car config))
        (should (string= (company-php-class--prefix) (cdr config)))))
    '(("new \\Foo" . "\\Foo")
