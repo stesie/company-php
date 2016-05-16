@@ -64,7 +64,9 @@
     (mapcar
      (lambda (config)
        (should (equal
-		(company-php-class--candidates (car config))
+		(cl-letf (((symbol-function #'company-php-class--do-fqcn-completion)
+			   (lambda () nil)))
+		  (company-php-class--candidates (car config)))
 		(cdr config))))
      '(("Assert" . ("Assertion"
 		    "AssertionChain"
@@ -104,7 +106,9 @@ use QafooLabs\\Refactoring\\Domain\\Model\\LineRange;")
 	       (lambda ()
 		 '(("Assert\\Assertion" . "Assertion")
 		   ("Assert\\AssertionChain" . "AliasChain")
-		   ("Assert\\AssertionFailedException" . "AssertFailException")))))
+		   ("Assert\\AssertionFailedException" . "AssertFailException"))))
+	      ((symbol-function #'company-php-class--do-fqcn-completion)
+			   (lambda () nil)))
       (should (equal
 	       (company-php-class--candidates "Assert")
 	       '("Assertion"

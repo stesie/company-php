@@ -31,6 +31,8 @@
 	      "\\(?:\s+as\s+\\(" company-php-member--classname-regex "\\)\\)?"
 	      "\s*;"))
 
+(setq company-php-class--prefix-regex
+      "\\(use\\|new\\)\s+\\(\\(?:\\\\?[a-zA-Z_\x7f-\xff]?[a-zA-Z0-9_\x7f-\xff]*\\)*\\)")
 
 (setq company-php-class--candidates-mapping nil)
 
@@ -54,7 +56,7 @@
     (when prefix
       (unless company-php-class--candidates-mapping
 	(company-php-class--fetch-candidates))
-      (list (match-beginning 1)
+      (list (match-beginning 2)
 	    (point)
 	    (company-php-class--candidates "")
 	    :annotation-function #'company-php-class--annotation
@@ -64,9 +66,25 @@
   "Get completion prefix"
   (and
    (eq major-mode 'php-mode)
+   ;; work around using looking-back which took ages to fail
+   ;; with this regexp: just re-search-backward and make sure the matching
+   ;; string runs at least to the point
    (let ((limit (save-excursion (c-beginning-of-statement 1) (point))))
-     (looking-back "\\(?:use\\|new\\)\s+\\(\\(?:\\\\?[a-zA-Z_\x7f-\xff]?[a-zA-Z0-9_\x7f-\xff]*\\)*\\)" limit))
-   (match-string-no-properties 1)))
+     (save-excursion
+       (re-search-backward company-php-class--prefix-regex limit t)))
+   (>= (match-end 2) (point))
+   (match-string-no-properties 2)))
+
+(defun company-php-class--do-fqcn-completion ()
+  "Test prefix whether to do FQCN completion or not.
+Returns 'slashed if FQCN completion should be performed and the completion
+candidates should have a backslash at the beginning.
+Returns non-nil if FQCN completion is required otherwise."
+  (let ((prefix (company-php-class--prefix)))
+    (if (string-prefix-p "\\" prefix)
+	'slashed
+      (or (string-match-p "\\\\" prefix)
+	  (string= "use" (match-string-no-properties 1))))))
 
 (defun company-php-class--meta (candidate)
   "Get completion candidate meta data"
@@ -74,15 +92,16 @@
 
 (defun company-php-class--annotation (candidate)
   "Get completion candidate annotation string"
-  ;(unless (equal candidate (get-text-property 0 'class-name candidate))
-  (format " (\\%s)" (get-text-property 0 'class-name candidate)))
+  (unless (get-text-property 0 'fqcn-completion candidate)
+    (format " (\\%s)" (get-text-property 0 'class-name candidate))))
 
 (defun company-php-class--candidates (prefix)
   "Get completion candidates"
   (unless company-php-class--candidates-mapping
     (company-php-class--fetch-candidates))
 
-  (let ((uses (company-php-class--get-uses)))
+  (let ((uses            (company-php-class--get-uses))
+	(fqcn-completion (company-php-class--do-fqcn-completion)))
     (cl-remove-if-not
      (lambda (c) (string-prefix-p prefix c))
      (mapcar (lambda (candidate)
@@ -91,9 +110,13 @@
 		      (short-name   (progn (string-match "[a-zA-Z_\x7f-\xff]?[a-zA-Z0-9_\x7f-\xff]*$" (car candidate))
 					   (match-string 0 (car candidate))))
 		      (alias        (assoc (car candidate) uses)))
-		 (propertize (if alias (cdr alias) short-name)
-			     'short-desc (cdr (assoc "short" descriptions))
-			     'class-name (car candidate))))
+		 (propertize (cond ((equal fqcn-completion 'slashed) (concat "\\" (car candidate)))
+				   (fqcn-completion (car candidate))
+				   (alias           (cdr alias))
+				   (t               short-name))
+			     'fqcn-completion fqcn-completion
+			     'short-desc      (cdr (assoc "short" descriptions))
+			     'class-name      (car candidate))))
 	     company-php-class--candidates-mapping))))
 
 (defun company-php-class--fetch-candidates ()
