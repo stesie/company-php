@@ -191,6 +191,7 @@
 	    (point)
 	    (company-php-member--get-candidates "")
 	    :company-docsig #'company-php-member--get-meta
+	    :exit-function #'company-php-member--exit-function
 	    :annotation-function #'company-php-member--get-annotation))))
 
 (defun company-php-member--get-meta (member)
@@ -218,6 +219,21 @@
 		") -> " return-type)
 
       (concat " @var " return-type))))
+
+(defun company-php-member--exit-function (member status)
+  (let* ((member-info   (assoc member company-php-member--candidates))
+	 (args          (assoc "args" member-info))
+	 (parameters    (cdr (assoc "parameters" args))))
+
+    (when (cdr (assoc "isMethod" member-info))
+      (insert "(")			; it's a method, insert opening paren
+
+      ;; auto-close method calls without arguments
+      (if (not parameters)
+	  (insert ")")
+
+	))))
+
 
 (defun company-php-member--guess-type-from-typehint (var-name)
   "Try to guess type of variable from typehint"
