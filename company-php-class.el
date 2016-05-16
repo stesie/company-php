@@ -107,8 +107,9 @@
     (save-excursion
       (beginning-of-buffer)
       (while (re-search-forward company-php-class--use-stmt-regex nil t)
-	(push (cons (match-string 1) (or (match-string 3)
-					 (match-string 2))) uses))
+	(push (cons (match-string-no-properties 1)
+		    (or (match-string-no-properties 3)
+			(match-string-no-properties 2))) uses))
       uses)))
 
 (provide 'company-php-class)
