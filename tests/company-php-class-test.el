@@ -60,11 +60,11 @@
 	     "A TestCase defines the fixture to run multiple tests."))))
 
 (ert-deftest company-php-class--candidates ()
-  (let ((company-php-class--candidates-list
-	 '("Assert\\Assertion"
-	   "Assert\\AssertionChain"
-	   "Assert\\AssertionFailedException"
-	   "PHPUnit_Framework_TestCase")))
+  (let ((company-php-class--candidates-mapping
+	 '(("Assert\\Assertion")
+	   ("Assert\\AssertionChain")
+	   ("Assert\\AssertionFailedException")
+	   ("PHPUnit_Framework_TestCase"))))
     (mapcar
      (lambda (config)
        (should (equal

@@ -21,7 +21,6 @@
 (require 'company-php)
 (require 'cl-lib)
 
-(setq company-php-class--candidates-list nil)
 (setq company-php-class--candidates-mapping nil)
 
 
@@ -34,6 +33,7 @@
     (interactive (company-begin-backend 'company-php-class-backend))
     (prefix      (company-php-class--prefix))
     (meta        (company-php-class--meta arg))
+    (annotation  (company-php-class--annotation arg))
     (candidates  (company-php-class--candidates arg))))
 
 ;;;###autoload
@@ -41,11 +41,13 @@
   "completion-at-point function for PHP class name completion."
   (let ((prefix (company-php-class--prefix)))
     (when prefix
-      (unless company-php-class--candidates-list
+      (unless company-php-class--candidates-mapping
 	(company-php-class--fetch-candidates))
       (list (match-beginning 1)
 	    (point)
-	    company-php-class--candidates-list))))
+	    (company-php-class--candidates "")
+	    :annotation-function #'company-php-class--annotation
+	    :company-docsig #'company-php-class--meta))))
 
 (defun company-php-class--prefix ()
   "Get completion prefix"
@@ -57,26 +59,35 @@
 
 (defun company-php-class--meta (candidate)
   "Get completion candidate meta data"
-  (let* ((candidate-info (cdr (assoc candidate company-php-class--candidates-mapping)))
-	 (class-info     (cdr (assoc "class" candidate-info)))
-	 (descriptions   (cdr (assoc "descriptions" class-info))))
-    (cdr (assoc "short" descriptions))))
+  (get-text-property 0 'short-desc candidate))
+
+(defun company-php-class--annotation (candidate)
+  "Get completion candidate annotation string"
+  ;(unless (equal candidate (get-text-property 0 'class-name candidate))
+  (format " (\\%s)" (get-text-property 0 'class-name candidate)))
 
 (defun company-php-class--candidates (prefix)
   "Get completion candidates"
-  (unless company-php-class--candidates-list
+  (unless company-php-class--candidates-mapping
     (company-php-class--fetch-candidates))
 
   (copy-sequence ; hack so company won't clobber our list
    (cl-remove-if-not
     (lambda (c) (string-prefix-p prefix c))
-    company-php-class--candidates-list)))
+    (mapcar (lambda (candidate)
+	      (let* ((class-info   (cdr (assoc "class" candidate)))
+		     (descriptions (cdr (assoc "descriptions" class-info)))
+		     (short-name   (progn (string-match "[a-zA-Z_\x7f-\xff]?[a-zA-Z0-9_\x7f-\xff]*$" (car candidate))
+					  (match-string 0 (car candidate)))))
+		(propertize short-name
+			    'short-desc (cdr (assoc "short" descriptions))
+			    'class-name (car candidate))))
+	    company-php-class--candidates-mapping))))
 
 (defun company-php-class--fetch-candidates ()
   "Read JSON data from index file"
   (let ((index (company-php-read-index "classes")))
     (when index
-      (setq company-php-class--candidates-list (cdr (assoc "autocomplete" index)))
       (setq company-php-class--candidates-mapping (cdr (assoc "mapping" index))))))
 
 (provide 'company-php-class)
