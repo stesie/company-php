@@ -71,3 +71,14 @@
 		    "AssertionFailedException"))
        ("PHPU" . ("PHPUnit_Framework_TestCase"))
        ("Foo" . nil)))))
+
+(ert-deftest company-php-class--get-uses ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "use QafooLabs\\Refactoring\\Domain\\Model\\File;
+use QafooLabs\\Refactoring\\Domain\\Model\\LineRange;")
+    (should (equal
+	     (company-php-class--get-uses)
+	     '(("QafooLabs\\Refactoring\\Domain\\Model\\LineRange" . "LineRange")
+	       ("QafooLabs\\Refactoring\\Domain\\Model\\File" . "File"))))))

@@ -19,7 +19,17 @@
 
 (require 'company)
 (require 'company-php)
+(require 'company-php-member)		; for regexp definitions
 (require 'cl-lib)
+
+
+(setq company-php-class--use-stmt-regex
+      (concat "\\<use\\>\s+"
+	      "\\(" "\\(?:" company-php-member--classname-regex "\\\\" "\\)*"
+	      "\\(" company-php-member--classname-regex
+	      "\\)" "\\)"
+	      ";"))
+
 
 (setq company-php-class--candidates-mapping nil)
 
@@ -89,5 +99,14 @@
   (let ((index (company-php-read-index "classes")))
     (when index
       (setq company-php-class--candidates-mapping (cdr (assoc "mapping" index))))))
+
+(defun company-php-class--get-uses ()
+  "Extract use mapping from current buffer"
+  (let (uses)
+    (save-excursion
+      (beginning-of-buffer)
+      (while (re-search-forward company-php-class--use-stmt-regex nil t)
+	(push (cons (match-string 1) (match-string 2)) uses))
+      uses)))
 
 (provide 'company-php-class)
