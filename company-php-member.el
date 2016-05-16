@@ -190,6 +190,7 @@
       (list (match-beginning 1)
 	    (point)
 	    (company-php-member--get-candidates "")
+	    :company-docsig #'company-php-member--get-meta
 	    :annotation-function #'company-php-member--get-annotation))))
 
 (defun company-php-member--get-meta (member)
