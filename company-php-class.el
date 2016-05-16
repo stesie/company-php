@@ -82,18 +82,19 @@
   (unless company-php-class--candidates-mapping
     (company-php-class--fetch-candidates))
 
-  (copy-sequence ; hack so company won't clobber our list
-   (cl-remove-if-not
-    (lambda (c) (string-prefix-p prefix c))
-    (mapcar (lambda (candidate)
-	      (let* ((class-info   (cdr (assoc "class" candidate)))
-		     (descriptions (cdr (assoc "descriptions" class-info)))
-		     (short-name   (progn (string-match "[a-zA-Z_\x7f-\xff]?[a-zA-Z0-9_\x7f-\xff]*$" (car candidate))
-					  (match-string 0 (car candidate)))))
-		(propertize short-name
-			    'short-desc (cdr (assoc "short" descriptions))
-			    'class-name (car candidate))))
-	    company-php-class--candidates-mapping))))
+  (let ((uses (company-php-class--get-uses)))
+    (cl-remove-if-not
+     (lambda (c) (string-prefix-p prefix c))
+     (mapcar (lambda (candidate)
+	       (let* ((class-info   (cdr (assoc "class" candidate)))
+		      (descriptions (cdr (assoc "descriptions" class-info)))
+		      (short-name   (progn (string-match "[a-zA-Z_\x7f-\xff]?[a-zA-Z0-9_\x7f-\xff]*$" (car candidate))
+					   (match-string 0 (car candidate))))
+		      (alias        (assoc (car candidate) uses)))
+		 (propertize (if alias (cdr alias) short-name)
+			     'short-desc (cdr (assoc "short" descriptions))
+			     'class-name (car candidate))))
+	     company-php-class--candidates-mapping))))
 
 (defun company-php-class--fetch-candidates ()
   "Read JSON data from index file"

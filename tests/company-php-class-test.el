@@ -83,7 +83,6 @@ use QafooLabs\\Refactoring\\Domain\\Model\\LineRange;")
 	     '(("QafooLabs\\Refactoring\\Domain\\Model\\LineRange" . "LineRange")
 	       ("QafooLabs\\Refactoring\\Domain\\Model\\File" . "File"))))))
 
-
 (ert-deftest company-php-class--get-uses-with-rename ()
   (with-temp-buffer
     (let ((php-mode-hook nil))
@@ -94,3 +93,19 @@ use QafooLabs\\Refactoring\\Domain\\Model\\LineRange;")
 	     (company-php-class--get-uses)
 	     '(("QafooLabs\\Refactoring\\Domain\\Model\\LineRange" . "LineRange")
 	       ("QafooLabs\\Refactoring\\Domain\\Model\\File" . "SomeFile"))))))
+
+(ert-deftest company-php-class--candidates-handles-class-aliases ()
+  (let ((company-php-class--candidates-mapping
+	 '(("Assert\\Assertion")
+	   ("Assert\\AssertionChain")
+	   ("Assert\\AssertionFailedException")
+	   ("PHPUnit_Framework_TestCase"))))
+    (cl-letf (((symbol-function #'company-php-class--get-uses)
+	       (lambda ()
+		 '(("Assert\\Assertion" . "Assertion")
+		   ("Assert\\AssertionChain" . "AliasChain")
+		   ("Assert\\AssertionFailedException" . "AssertFailException")))))
+      (should (equal
+	       (company-php-class--candidates "Assert")
+	       '("Assertion"
+		 "AssertFailException"))))))
