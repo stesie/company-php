@@ -221,18 +221,28 @@
       (concat " @var " return-type))))
 
 (defun company-php-member--exit-function (member status)
+  "Completion on-exit function, adding parentheses after member name, if the
+completed member is a method.  If the member takes no arguments, then a
+ellipsis is inserted without further interaction.  Otherwise yasnippet expansion
+is triggered for all parameters."
   (let* ((member-info   (assoc member company-php-member--candidates))
 	 (args          (assoc "args" member-info))
 	 (parameters    (cdr (assoc "parameters" args))))
 
     (when (cdr (assoc "isMethod" member-info))
-      (insert "(")			; it's a method, insert opening paren
-
-      ;; auto-close method calls without arguments
       (if (not parameters)
-	  (insert ")")
-
-	))))
+	  (insert "()")	   ; auto-close method calls without arguments
+	(if (bound-and-true-p yas-minor-mode)
+	    (let ((index 0))
+	      (yas-expand-snippet
+	       (concat "("
+		       (mapconcat 'identity
+				  (mapcar (lambda (elm)
+					    (incf index)
+					    (format "${%d:%s}" index elm))
+					  parameters) ", ")
+		       ")$0")))
+	  (insert "("))))))
 
 
 (defun company-php-member--guess-type-from-typehint (var-name)
