@@ -49,14 +49,10 @@
      ("new \\Foo\\Bar\\Baz" . "\\Foo\\Bar\\Baz"))))
 
 (ert-deftest company-php-class--meta ()
-  (let ((company-php-class--candidates-mapping
-	 '(("PHPUnit_Framework_TestCase" .
-	    (("class" .
-	      (("descriptions" .
-		(("short" . "A TestCase defines the fixture to run multiple tests.")
-		 ("long" . "To define a TestCase ..."))))))))))
+  (let ((candidate (propertize "PHPUnit_Framework_TestCase"
+			       'short-desc "A TestCase defines the fixture to run multiple tests.")))
     (should (string=
-	     (company-php-class--meta "PHPUnit_Framework_TestCase")
+	     (company-php-class--meta candidate)
 	     "A TestCase defines the fixture to run multiple tests."))))
 
 (ert-deftest company-php-class--candidates ()
@@ -70,8 +66,8 @@
        (should (equal
 		(company-php-class--candidates (car config))
 		(cdr config))))
-     '(("Assert" . ("Assert\\Assertion"
-		    "Assert\\AssertionChain"
-		    "Assert\\AssertionFailedException"))
+     '(("Assert" . ("Assertion"
+		    "AssertionChain"
+		    "AssertionFailedException"))
        ("PHPU" . ("PHPUnit_Framework_TestCase"))
        ("Foo" . nil)))))
