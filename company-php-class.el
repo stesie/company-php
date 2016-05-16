@@ -28,7 +28,8 @@
 	      "\\(" "\\(?:" company-php-member--classname-regex "\\\\" "\\)*"
 	      "\\(" company-php-member--classname-regex
 	      "\\)" "\\)"
-	      ";"))
+	      "\\(?:\s+as\s+\\(" company-php-member--classname-regex "\\)\\)?"
+	      "\s*;"))
 
 
 (setq company-php-class--candidates-mapping nil)
@@ -106,7 +107,8 @@
     (save-excursion
       (beginning-of-buffer)
       (while (re-search-forward company-php-class--use-stmt-regex nil t)
-	(push (cons (match-string 1) (match-string 2)) uses))
+	(push (cons (match-string 1) (or (match-string 3)
+					 (match-string 2))) uses))
       uses)))
 
 (provide 'company-php-class)

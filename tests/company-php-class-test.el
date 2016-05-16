@@ -82,3 +82,15 @@ use QafooLabs\\Refactoring\\Domain\\Model\\LineRange;")
 	     (company-php-class--get-uses)
 	     '(("QafooLabs\\Refactoring\\Domain\\Model\\LineRange" . "LineRange")
 	       ("QafooLabs\\Refactoring\\Domain\\Model\\File" . "File"))))))
+
+
+(ert-deftest company-php-class--get-uses-with-rename ()
+  (with-temp-buffer
+    (let ((php-mode-hook nil))
+      (php-mode))
+    (insert "use QafooLabs\\Refactoring\\Domain\\Model\\File as SomeFile;
+use QafooLabs\\Refactoring\\Domain\\Model\\LineRange;")
+    (should (equal
+	     (company-php-class--get-uses)
+	     '(("QafooLabs\\Refactoring\\Domain\\Model\\LineRange" . "LineRange")
+	       ("QafooLabs\\Refactoring\\Domain\\Model\\File" . "SomeFile"))))))
